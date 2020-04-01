@@ -210,7 +210,7 @@ def choose_algorithm():
         AvgWait=waiting_FCFS/len(FCFS_arr)
     plot()
 
-def plot():
+def plot_FCFS():
     n = FCFS_arr[-1][3]
     fig, gnt = plt.subplots()  
     gnt.set_ylim(0, 25) 
