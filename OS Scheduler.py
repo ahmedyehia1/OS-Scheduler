@@ -12,7 +12,9 @@ P=[]
 time_entry=[]
 time_val=0.0
 FCFS_arr=[]
-
+SJF_non=[]
+RR=[]
+RQ=[]
 def onFrameConfigure(canvas):
     canvas.configure(scrollregion=canvas.bbox("all"))
 
@@ -79,7 +81,15 @@ def submit():
                             "remain":float(burst[k].get())}
             k+=1
     for i in data_base:
-        FCFS_arr.append([i, data_base[i]["arrival"], data_base[i]["burst"], data_base[i]["arrival"] + data_base[i]["burst"]])
+        if algorithm.get()=="FCFS":
+            FCFS_arr.append([i, data_base[i]["arrival"], data_base[i]["burst"], data_base[i]["arrival"] + data_base[i]["burst"]])
+        elif algorithm.get()=="SJF":
+            SJF_non.append([i, data_base[i]["arrival"], data_base[i]["burst"], data_base[i]["arrival"] + data_base[i]["burst"]])
+        elif algorithm.get()=="RR":
+            FCFS_arr.append([i, data_base[i]["arrival"], data_base[i]["burst"],data_base[i]["remain"], data_base[i]["arrival"] + data_base[i]["burst"]])
+
+
+
     '''print(time_val)
     print(data_base)
     print(rad_sjf.get())'''
@@ -100,6 +110,13 @@ def done_1():
      messagebox.showerror("Error","Please enter valid data ")
 
 def clear():
+    processes.clear()
+    arrival.clear()
+    burst.clear()
+    data_base.clear()
+    P.clear()
+    FCFS_arr.clear()
+    SJF_non.clear()
     canvas.delete("all")
     for i in range(int(input.get())):
         label = Label(root, text="                      ",bg="#e3e3e3")
@@ -179,9 +196,13 @@ def time_slice(bool):
         else:
             time_entry[1].grid(row=3, column=1)
     if bool==1:
-        if algorithm.get()=="RR":
-            time_val = float(time_entry[0].get())
-        else: time_val = float(time_entry[1].get())
+        try:
+            if algorithm.get()=="RR":
+                time_val = float(time_entry[0].get())
+            else: time_val = float(time_entry[1].get())
+        except:
+            messagebox.showerror("Error", "Please enter valid data ")
+
 
 def color(num):
     data = dict()
@@ -194,35 +215,145 @@ def color(num):
         blue = int(255*i/num) if int(255*i/num) <= 255 else 255
         data[num+i] = "#00" + "%0.2X" % green + "%0.2X" % blue
     return data
-
+# data_base[i]={"arrival":float(arrival[k].get()),"burst":float(burst[k].get()),"type":val.get(),"remain":float(burst[k].get())}
 def choose_algorithm():
     global AvgWait
+    global rad_sjf
     if algorithm.get()=="FCFS":
         waiting_FCFS = 0.0
 
         FCFS_arr.sort(key=lambda x: x[1])
-
+        #print(FCFS_arr)
         for i in range(1,len(FCFS_arr)):
             if FCFS_arr[i][1]<FCFS_arr[i-1][3]:
                 waiting_FCFS += (FCFS_arr[i-1][3]-FCFS_arr[i][1])
                 FCFS_arr[i][1]=FCFS_arr[i-1][3]
                 FCFS_arr[i][3]=FCFS_arr[i][1]+FCFS_arr[i][2]
         AvgWait=waiting_FCFS/len(FCFS_arr)
-    plot()
+        print(FCFS_arr)
+        plot(FCFS_arr)
+        FCFS_arr.clear()
+        data_base.clear()
+    elif algorithm.get()=="SJF" and rad_sjf.get()==0:
+        waiting_SJF_non=0.0
+        ls_indx=[]
+        SJF_non.sort(key=lambda x: x[1])
+        acc = [0]
+        k=0
+        for i in range(1,len(SJF_non)):
+            if SJF_non[i][1]!=SJF_non[acc[k]][1]:
+                acc.append(i)
+                k+=1
+        print(acc)
+        for i in range(len(acc)):
+            if i !=len(acc)-1:
+                SJF_non[int(acc[i]):int(acc[i+1])] = sorted(SJF_non[int(acc[i]):int(acc[i+1])], key=lambda x: x[2])
+            else:
+                SJF_non[acc[-1]:len(SJF_non)] = sorted(SJF_non[acc[-1]:len(SJF_non)], key=lambda x: x[2])
+        #print(SJF_non)
 
-def plot_FCFS():
-    n = FCFS_arr[-1][3]
+        for k in range(0,len(SJF_non)-1):
+            for i in range(k+1,len(SJF_non)):
+                if SJF_non[i][1]<=SJF_non[k][3]:
+                    ls_indx.append([SJF_non[i],i])
+                else:
+                    break
+            ls_indx.sort(key=lambda x: x[0][2])
+            SJF_non[ls_indx[0][1]],SJF_non[k+1]=SJF_non[k+1],SJF_non[ls_indx[0][1]]
+            ls_indx.clear()
+            if SJF_non[k+1][1]<SJF_non[k][3]:
+                waiting_SJF_non +=SJF_non[k][3]-SJF_non[k+1][1]
+                SJF_non[k+1][1]=SJF_non[k][3]
+                SJF_non[k+1][3]=SJF_non[k+1][1]+SJF_non[k+1][2]
+
+        AvgWait=waiting_SJF_non/len(SJF_non)
+        print(SJF_non)
+        print(AvgWait)
+        plot(SJF_non)
+        acc.clear()
+        SJF_non.clear()
+        data_base.clear()
+    elif algorithm.get()=="RR":
+         #process / initial / remain / finish
+         #time spend in the ready queue
+         FCFS_arr.sort(key=lambda x: x[1])
+         waiting_rr=0.0
+         flag=0
+         acc = [0]
+         k = 0
+         for i in range(1, len(FCFS_arr)):
+             if FCFS_arr[i][1] != FCFS_arr[acc[k]][1]:
+                 acc.append(i)
+                 k += 1
+         print(acc)
+         #FCFS_arr.clear()
+         #acc.clear()
+         for i in range(len(acc)-1):
+             if i != len(acc) - 1:
+                 RQ.append(FCFS_arr[int(acc[i]):int(acc[i + 1])])
+                 #zabat time
+                 for k in range(len(RQ)):
+                     if RQ[k][2]<=time_val:
+                         RQ[k][4]=RQ[k][2]+RQ[k][1]
+                     else:
+                         RQ[k][4]=time_val+RQ[k][1]
+                         RQ[k][2]=time_val
+                 #build RR and modify RQ
+                 for k in range(len(RQ)):
+                     if RQ[k][2] <= time_val:
+                         RR.append(RQ[k])
+                         del RQ[0]
+                     else:
+                         RQ[k][4] = time_val + RQ[k][1]
+                         RQ[k][2] = time_val
+                         RR.append(RQ[k])
+                         temp=RQ[0]
+                         del RQ[0]
+                         if FCFS_arr[int(acc[i + 1])][1] <=RR[-1][4]:
+                            
+                         RQ.append(temp)
+
+
+             else:
+                 RQ.append(FCFS_arr[int(acc[-1]):])
+
+
+         
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def plot(arr):
+    n = arr[-1][-1]
     fig, gnt = plt.subplots()  
     gnt.set_ylim(0, 25) 
     gnt.set_xlim(0, n)
     gnt.set_xticks(numpy.arange(0.0,n,0.1))
     data = color(int(n))
 
-    for i in range(len(FCFS_arr)):
-        gnt.broken_barh([(FCFS_arr[i][1], FCFS_arr[i][2])], (0, 4), facecolors = data[i])
-        plt.text((FCFS_arr[i][1]+FCFS_arr[i][3])/2,2,FCFS_arr[i][0],ha='center', va='center')
+    for i in range(len(arr)):
+        gnt.broken_barh([(arr[i][1], arr[i][2])], (0, 4), facecolors = data[i])
+        plt.text((arr[i][1]+arr[i][-1])/2,2,arr[i][0],ha='center', va='center')
     plt.show()
-    FCFS_arr.clear()
 
 
 root = Tk()
