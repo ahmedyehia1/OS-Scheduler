@@ -1,8 +1,8 @@
 from tkinter import *
-from tkinter import messagebox 
-import matplotlib.pyplot as plt 
+from tkinter import messagebox
+import matplotlib.pyplot as plt
 import numpy
-
+ 
 data_base = {}
 arrival=[]
 burst=[]
@@ -13,11 +13,13 @@ time_entry=[]
 time_val=0.0
 FCFS_arr=[]
 SJF_non=[]
+pr_non=[]
+SJF_pree=[]
 RR=[]
 RQ=[]
 def onFrameConfigure(canvas):
     canvas.configure(scrollregion=canvas.bbox("all"))
-
+ 
 def create_data():
     global canvas
     global frame
@@ -29,22 +31,22 @@ def create_data():
     canvas.grid(row=5, column=0)
     canvas.create_window((10, 10), window=frame, anchor="nw")
     frame.bind("<Configure>", lambda event, canvas=canvas: onFrameConfigure(canvas))
-
+ 
     label_3 = Label(frame, text="Processes",background="#e3e3e3")
     label_3.grid(row=4, column=0)
     label_4 = Label(frame, text="Arival Time",background="#e3e3e3")
     label_4.grid(row=4, column=1)
     label_5 = Label(frame, text="Burst Time",background="#e3e3e3")
     label_5.grid(row=4, column=2)
-
+ 
     for i in range(int(input.get())):
         arrival.append(Entry(frame, width=10))
         burst.append(Entry(frame, width=10))
         processes.append(Label(frame, text="P" + str(i),background="#e3e3e3"))
         P.append("P"+str(i))
         data_base.setdefault(P[i])
-
-
+ 
+ 
 def submit():
   try:
     global time_val
@@ -80,25 +82,31 @@ def submit():
                            "burst": float(burst[k].get()),
                             "remain":float(burst[k].get())}
             k+=1
+    #print(rad_sjf.get())
     for i in data_base:
         if algorithm.get()=="FCFS":
             FCFS_arr.append([i, data_base[i]["arrival"], data_base[i]["burst"], data_base[i]["arrival"] + data_base[i]["burst"]])
-        elif algorithm.get()=="SJF":
+        elif algorithm.get()=="SJF" and rad_sjf.get()==0 :
             SJF_non.append([i, data_base[i]["arrival"], data_base[i]["burst"], data_base[i]["arrival"] + data_base[i]["burst"]])
+        elif algorithm.get() == "SJF" and rad_sjf.get()==1:
+            SJF_pree.append([i, data_base[i]["arrival"], data_base[i]["burst"], data_base[i]["remain"]])
         elif algorithm.get()=="RR":
             FCFS_arr.append([i, data_base[i]["arrival"], data_base[i]["burst"],data_base[i]["remain"], data_base[i]["arrival"] + data_base[i]["burst"]])
-
-
-
+        elif algorithm.get()=="Priority" and val.get()=="Nonpreemptive":
+            pr_non.append([i, data_base[i]["arrival"], data_base[i]["burst"],data_base[i]["priority"], data_base[i]["arrival"] + data_base[i]["burst"]])
+ 
+ 
+ 
+ 
     '''print(time_val)
     print(data_base)
     print(rad_sjf.get())'''
     choose_algorithm()
   except ValueError:
       messagebox.showerror("Error","Please enter valid data ")
-
-
-
+ 
+ 
+ 
 def done_1():
   try:
     create_data()
@@ -108,7 +116,7 @@ def done_1():
         burst[i].grid(row=5 + i, column=2)
   except ValueError:
      messagebox.showerror("Error","Please enter valid data ")
-
+ 
 def clear():
     processes.clear()
     arrival.clear()
@@ -127,7 +135,7 @@ def clear():
         label_a.grid(row=5 + i, column=2)
         label_b = Label(root, text="                      ",bg="#e3e3e3")
         label_b.grid(row=5 + i, column=3)
-
+ 
 def done_2(mode):
     global val
     val = StringVar()
@@ -148,7 +156,7 @@ def done_2(mode):
         del_pr()
         time_slice(0)
         label_q = Label(root, text="Time Slice",background="#e3e3e3").grid(row=2, column=0)
-
+ 
     else:
         del_pr()
         global rad_sjf
@@ -157,7 +165,7 @@ def done_2(mode):
         rb_2 = Radiobutton(root, text="Nonpreemptive", variable=rad_sjf, value=0,background="#e3e3e3")
         rb_1.grid(row=2, column=0)
         rb_2.grid(row=2, column=1)
-
+ 
 def radio(val):
     label_7 = Label(root, text="Time Slice",background="#e3e3e3")
     label_b = Label(root, text="                      ",bg="#e3e3e3")
@@ -168,7 +176,7 @@ def radio(val):
     else:
         label_b.grid(row=3, column=0)
         label_c.grid(row=3, column=1)
-
+ 
 def del_pr():
     priority.clear()
     label = Label(root, text="                                      ",bg="#e3e3e3")
@@ -184,7 +192,7 @@ def del_pr():
     for i in range(int(input.get())):
         label_c = Label(frame, text="                      ",bg="#e3e3e3")
         label_c.grid(row=5 + i, column=3)
-
+ 
 def time_slice(bool):
     global time_val
     if bool ==0:
@@ -202,26 +210,16 @@ def time_slice(bool):
             else: time_val = float(time_entry[1].get())
         except:
             messagebox.showerror("Error", "Please enter valid data ")
-
-
-def color(num):
-    data = dict()
-    for i in range(0,num):
-        red = int(255-255*i/num) if int(255-255*i/num) >= 0 else 0
-        green = int(255*i/num) if int(255*i/num) <= 255 else 255
-        data[i] = "#" + "%0.2X" % red + "%0.2X" % green + "00"
-    for i in range(0,num):
-        green = int(255-255*i/num) if int(255-255*i/num) >= 0 else 0
-        blue = int(255*i/num) if int(255*i/num) <= 255 else 255
-        data[num+i] = "#00" + "%0.2X" % green + "%0.2X" % blue
-    return data
-# data_base[i]={"arrival":float(arrival[k].get()),"burst":float(burst[k].get()),"type":val.get(),"remain":float(burst[k].get())}
+ 
+ 
 def choose_algorithm():
     global AvgWait
     global rad_sjf
+    global SJF_pree
+    global pr_non
     if algorithm.get()=="FCFS":
         waiting_FCFS = 0.0
-
+ 
         FCFS_arr.sort(key=lambda x: x[1])
         #print(FCFS_arr)
         for i in range(1,len(FCFS_arr)):
@@ -251,21 +249,24 @@ def choose_algorithm():
             else:
                 SJF_non[acc[-1]:len(SJF_non)] = sorted(SJF_non[acc[-1]:len(SJF_non)], key=lambda x: x[2])
         #print(SJF_non)
-
+        x=0
         for k in range(0,len(SJF_non)-1):
             for i in range(k+1,len(SJF_non)):
                 if SJF_non[i][1]<=SJF_non[k][3]:
                     ls_indx.append([SJF_non[i],i])
+                    x=1
                 else:
                     break
-            ls_indx.sort(key=lambda x: x[0][2])
-            SJF_non[ls_indx[0][1]],SJF_non[k+1]=SJF_non[k+1],SJF_non[ls_indx[0][1]]
-            ls_indx.clear()
+            if x==1:
+                ls_indx.sort(key=lambda x: x[0][2])
+                print(ls_indx)
+                SJF_non[ls_indx[0][1]],SJF_non[k+1]=SJF_non[k+1],SJF_non[ls_indx[0][1]]
+                ls_indx.clear()
             if SJF_non[k+1][1]<SJF_non[k][3]:
                 waiting_SJF_non +=SJF_non[k][3]-SJF_non[k+1][1]
                 SJF_non[k+1][1]=SJF_non[k][3]
                 SJF_non[k+1][3]=SJF_non[k+1][1]+SJF_non[k+1][2]
-
+ 
         AvgWait=waiting_SJF_non/len(SJF_non)
         print(SJF_non)
         print(AvgWait)
@@ -273,126 +274,168 @@ def choose_algorithm():
         acc.clear()
         SJF_non.clear()
         data_base.clear()
-    elif algorithm.get()=="RR":
-         #process / initial / remain / finish
-         #time spend in the ready queue
-         FCFS_arr.sort(key=lambda x: x[1])
-         waiting_rr=0.0
-         flag=0
-         acc = [0]
-         k = 0
-         for i in range(1, len(FCFS_arr)):
-             if FCFS_arr[i][1] != FCFS_arr[acc[k]][1]:
-                 acc.append(i)
-                 k += 1
-         print(acc)
-         #FCFS_arr.clear()
-         #acc.clear()
-         for i in range(len(acc)-1):
-             if i != len(acc) - 1:
-                 RQ.append(FCFS_arr[int(acc[i]):int(acc[i + 1])])
-                 #zabat time
-                 for k in range(len(RQ)):
-                     if RQ[k][2]<=time_val:
-                         RQ[k][4]=RQ[k][2]+RQ[k][1]
-                     else:
-                         RQ[k][4]=time_val+RQ[k][1]
-                         RQ[k][2]=time_val
-                 #build RR and modify RQ
-                 for k in range(len(RQ)):
-                     if RQ[k][2] <= time_val:
-                         RR.append(RQ[k])
-                         del RQ[0]
-                     else:
-                         RQ[k][4] = time_val + RQ[k][1]
-                         RQ[k][2] = time_val
-                         RR.append(RQ[k])
-                         temp=RQ[0]
-                         del RQ[0]
-                         if FCFS_arr[int(acc[i + 1])][1] <=RR[-1][4]:
-                            
-                         RQ.append(temp)
-
-
-             else:
-                 RQ.append(FCFS_arr[int(acc[-1]):])
-
-
+    elif algorithm.get()=="SJF" and rad_sjf.get()==1:
+        seq = list()
+        SJF_pree = sorted(SJF_pree, key=lambda x: (x[1], x[2])) # error #
+        print(SJF_pree)
+        arrivels = []
+        time = 0.0
+        for i in range(len(SJF_pree)):
+            if SJF_pree[i][1] not in arrivels:
+                arrivels.append(SJF_pree[i][1])
+ 
+        print(arrivels)
+        time = arrivels.pop(0)
+        print(arrivels)
+ 
+        while SJF_pree != []:
+            if arrivels != []:
+                if time == arrivels[0]:
+                    for j in range(len(SJF_pree)):
+ 
+                        if SJF_pree[j][1] < time:
+                            SJF_pree[j][1] = round(time, 10)
+                        else:
+                            break
+ 
+                    SJF_pree = sorted(SJF_pree, key=lambda x: (x[1], x[3]))
+                    tmp = arrivels.pop(0)
+                elif SJF_pree[0][1] > time:
+                    time = arrivels[0]
+                elif time + SJF_pree[0][3] > arrivels[0]:  # arrivel + remaining
+                    if seq != []:
+                        if seq[-1][0] == SJF_pree[0][0]:
+                            seq[-1][2] += arrivels[0] - time
+                        else:
+                            seq.append([SJF_pree[0][0], time, arrivels[0] - time])
+                    else:
+                        seq.append([SJF_pree[0][0], time, arrivels[0] - time])
+                    SJF_pree[0][3] -= arrivels[0] - time
+                    time = arrivels[0]
+                elif time + SJF_pree[0][3] <= arrivels[0]:
+                    if seq != []:
+                        if seq[-1][0] == SJF_pree[0][0]:
+                            seq[-1][2] += SJF_pree[0][3]
+                        else:
+                            seq.append([SJF_pree[0][0], time, SJF_pree[0][3]])
+                    else:
+                        seq.append([SJF_pree[0][0], time, SJF_pree[0][3]])
+                    time += SJF_pree[0][3]
+                    tmp = SJF_pree.pop(0)
+ 
+            else:
+                if seq != []:
+                    if seq[-1][0] == SJF_pree[0][0]:
+                        seq[-1][2] += SJF_pree[0][3]
+                    else:
+                        seq.append([SJF_pree[0][0], time, SJF_pree[0][3]])
+                time += SJF_pree[0][3]
+                tmp = SJF_pree.pop(0)
+        for i in range(len(seq)):
+            seq[i].append(seq[i][1] + seq[i][2])
+        plot(seq)
+        seq.clear()
+        arrivels.clear()
+    if algorithm.get() == "Priority" and val.get() == "Nonpreemptive":
+        waiting_pr_non = 0.0
+        ls_indx = []
+        pr_non.sort(key=lambda x: x[1])
+        print(pr_non)
+        acc = [0]
+        k = 0
+        for i in range(1, len(pr_non)):
+            if pr_non[i][1] != pr_non[acc[k]][1]:
+                acc.append(i)
+                k += 1
+        print(acc)
+        for i in range(len(acc)):
+            if i != len(acc) - 1:
+                pr_non[int(acc[i]):int(acc[i + 1])] = sorted(pr_non[int(acc[i]):int(acc[i + 1])], key=lambda x: x[3])
+            else:
+                pr_non[acc[-1]:len(pr_non)] = sorted(pr_non[acc[-1]:len(pr_non)], key=lambda x: x[3])
+        # print(SJF_non)
+        x = 0
+        for k in range(0, len(pr_non) - 1):
+            for i in range(k + 1, len(pr_non)):
+                if pr_non[i][1] <= pr_non[k][4]:
+                    ls_indx.append([pr_non[i], i])
+                    x = 1
+                else:
+                    break
+            if x == 1:
+                ls_indx.sort(key=lambda x: x[0][3])
+                print(ls_indx)
+                pr_non[ls_indx[0][1]], pr_non[k + 1] = pr_non[k + 1], pr_non[ls_indx[0][1]]
+                ls_indx.clear()
+            if pr_non[k + 1][1] < pr_non[k][4]:
+                waiting_pr_non += pr_non[k][4] - pr_non[k + 1][1]
+                pr_non[k + 1][1] = pr_non[k][4]
+                pr_non[k + 1][4] = pr_non[k + 1][1] + pr_non[k + 1][2]
+ 
+        #AvgWait = waiting_pr_non / len(pr_non)
+        print(pr_non)
+        #print(AvgWait)
+        plot(pr_non)
+        acc.clear()
+        pr_non.clear()
+        data_base.clear()
+ 
+ 
          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 def plot(arr):
-    n = arr[-1][-1]
     fig, gnt = plt.subplots()  
-    gnt.set_ylim(0, 25) 
-    gnt.set_xlim(0, n)
-    gnt.set_xticks(numpy.arange(0.0,n,0.1))
-    data = color(int(n))
-
+    gnt.set_ylim(0, 24)
+    gnt.set_xlim(0,arr[-1][-1])
     for i in range(len(arr)):
-        gnt.broken_barh([(arr[i][1], arr[i][2])], (0, 4), facecolors = data[i])
+        gnt.broken_barh([(arr[i][1], arr[i][-1])], (0, 4), facecolors = plt.cm.get_cmap('hsv',len(arr)+1)(int(arr[i][0][1:])))
         plt.text((arr[i][1]+arr[i][-1])/2,2,arr[i][0],ha='center', va='center')
     plt.show()
-
-
+ 
+ 
 root = Tk()
 root.geometry("650x350")
 root.title('OS_Algorithms')
 root.configure(background="#e3e3e3")
-
-
+ 
+ 
 # create a lable widget
 label_1 = Label(root, text="Number of processes:",background="#e3e3e3")
 label_1.grid(row=0, column=0, padx=10)
-
+ 
 # create an input widget
 input = Entry(root)
 input.grid(row=0, column=1)
-
-
-
+ 
+ 
+ 
 # create dropdown menu
 algorithm = StringVar()
 algorithm.set("Choose Algorithm")
 drop = OptionMenu(root, algorithm, "FCFS", "SJF", "RR", "Priority").grid(row=1, column=0)
-
-
+ 
+ 
 # done_1 btn
 btn = Button(root, text="Done", command=done_1,bg="#e3e3e3")
 btn.grid(row=0, column=3)
 # clear btn
 btn_1 = Button(root, text="Clear Processes", command=clear,bg="#e3e3e3")
 btn_1.grid(row=0, column=4)
-
+ 
 # done_2
 btn_2 = Button(root, text="Done", command=lambda : done_2(algorithm.get()),background="#e3e3e3")
 btn_2.grid(row=1, column=1)
-
+ 
 # submit
 btn_3=Button(root,text="Submit",command=submit,background="#e3e3e3")
 btn_3.grid(row=1,column=3)
-
-
-
+ 
+ 
+ 
 root.mainloop()
