@@ -336,7 +336,7 @@ def choose_algorithm():
         for p in wait_dict:
             for i in range(1, len(wait_dict[p])):
                 AvgWait += wait_dict[p][i][0] - wait_dict[p][i - 1][1]
-        AvgWait = round(Avg_wait/ len(wait_dict),10)
+        AvgWait = round(AvgWait/ len(wait_dict),10)
         plot(seq,AvgWait)
         seq.clear()
         arrivels.clear()
@@ -449,7 +449,7 @@ def choose_algorithm():
         for p in wait_dict:
             for i in range(1, len(wait_dict[p])):
                 AvgWait += wait_dict[p][i][0] - wait_dict[p][i - 1][1]
-        AvgWait = round(Avg_wait/ len(wait_dict),10)
+        AvgWait = round(AvgWait/ len(wait_dict),10)
         plot(seq, AvgWait)
         seq.clear()
         pr_pree.clear()
@@ -538,14 +538,14 @@ def choose_algorithm():
         arrivels.clear()
  
 def plot(arr,wait):
-    fig, gnt = plt.subplots()
+    fig,gnt = plt.subplots()
     gnt.set_ylim(0, 24)
     gnt.set_xlim(0,arr[-1][-1])
     for i in range(len(arr)):
-        gnt.broken_barh([(arr[i][1], arr[i][-1])], (0, 4), facecolors = plt.cm.get_cmap('hsv',len(arr)+1)(int(arr[i][0][1:])), edgecolor="#333")
+        gnt.broken_barh([(arr[i][1], arr[i][-1]-arr[i][1])], (0, 4), facecolors = plt.cm.get_cmap('hsv',len(arr)+1)(int(arr[i][0][1:])), edgecolor="#333")
         plt.text((arr[i][1]+arr[i][-1])/2,2,arr[i][0],ha='center', va='center')
-        plt.text(int(arr[-1][-1]/2),21,algorithm.get(),fontsize = 18,ha='center', va='center')
-        plt.text(int(arr[-1][-1]/2),18,f"Average waiting time: {wait}",ha='center', va='center')
+    plt.text(int(arr[-1][-1]/2),21,algorithm.get(),fontsize = 18,ha='center', va='center')
+    plt.text(int(arr[-1][-1]/2),18,f"Average waiting time: {wait}",ha='center', va='center')
     plt.show()
  
  
