@@ -82,6 +82,9 @@ def submit():
                            "burst": float(burst[k].get()),
                             "remain":float(burst[k].get())}
             k+=1
+    FCFS_arr.clear()
+    SJF_non.clear()
+    pr_non.clear()
     for i in data_base:
         if algorithm.get()=="FCFS":
             FCFS_arr.append([i, data_base[i]["arrival"], data_base[i]["burst"], data_base[i]["arrival"] + data_base[i]["burst"]])
@@ -221,7 +224,7 @@ def choose_algorithm():
                 waiting_FCFS += (FCFS_arr[i-1][3]-FCFS_arr[i][1])
                 FCFS_arr[i][1]=FCFS_arr[i-1][3]
                 FCFS_arr[i][3]=FCFS_arr[i][1]+FCFS_arr[i][2]
-        AvgWait=waiting_FCFS/len(FCFS_arr)
+        AvgWait = round(waiting_FCFS/len(FCFS_arr), 10)
         plot(FCFS_arr,AvgWait)
         FCFS_arr.clear()
         data_base.clear()
@@ -257,7 +260,7 @@ def choose_algorithm():
                 SJF_non[k+1][1]=SJF_non[k][3]
                 SJF_non[k+1][3]=SJF_non[k+1][1]+SJF_non[k+1][2]
  
-        AvgWait=waiting_SJF_non/len(SJF_non)
+        AvgWait = round(waiting_SJF_non/len(SJF_non), 10)
         plot(SJF_non,AvgWait)
         acc.clear()
         SJF_non.clear()
@@ -333,7 +336,7 @@ def choose_algorithm():
         for p in wait_dict:
             for i in range(1, len(wait_dict[p])):
                 AvgWait += wait_dict[p][i][0] - wait_dict[p][i - 1][1]
-        AvgWait = round(AvgWait, 10) / len(wait_dict)
+        AvgWait = round(Avg_wait/ len(wait_dict),10)
         plot(seq,AvgWait)
         seq.clear()
         arrivels.clear()
@@ -370,7 +373,7 @@ def choose_algorithm():
                 pr_non[k + 1][1] = pr_non[k][4]
                 pr_non[k + 1][4] = pr_non[k + 1][1] + pr_non[k + 1][2]
  
-        AvgWait = waiting_pr_non / len(pr_non)
+        AvgWait = round(waiting_pr_non / len(pr_non), 10)
         plot(pr_non,AvgWait)
         acc.clear()
         pr_non.clear()
@@ -446,7 +449,7 @@ def choose_algorithm():
         for p in wait_dict:
             for i in range(1, len(wait_dict[p])):
                 AvgWait += wait_dict[p][i][0] - wait_dict[p][i - 1][1]
-        AvgWait = round(AvgWait, 10) / len(wait_dict)
+        AvgWait = round(Avg_wait/ len(wait_dict),10)
         plot(seq, AvgWait)
         seq.clear()
         pr_pree.clear()
@@ -527,7 +530,7 @@ def choose_algorithm():
         for p in wait_dict:
             for i in range(1, len(wait_dict[p])):
                 Avg_wait += wait_dict[p][i][0] - wait_dict[p][i - 1][1]
-        AvgWait = round(Avg_wait, 10) / len(wait_dict)
+        AvgWait = round(Avg_wait/ len(wait_dict),10)
         plot(seq, AvgWait)
         RQ.clear()
         wait_dict.clear()
@@ -541,7 +544,8 @@ def plot(arr,wait):
     for i in range(len(arr)):
         gnt.broken_barh([(arr[i][1], arr[i][-1])], (0, 4), facecolors = plt.cm.get_cmap('hsv',len(arr)+1)(int(arr[i][0][1:])), edgecolor="#333")
         plt.text((arr[i][1]+arr[i][-1])/2,2,arr[i][0],ha='center', va='center')
-        plt.text(int(arr[-1][-1]/2),20,f"Average waiting time: {wait}",ha='center', va='center')
+        plt.text(int(arr[-1][-1]/2),21,algorithm.get(),fontsize = 18,ha='center', va='center')
+        plt.text(int(arr[-1][-1]/2),18,f"Average waiting time: {wait}",ha='center', va='center')
     plt.show()
  
  
